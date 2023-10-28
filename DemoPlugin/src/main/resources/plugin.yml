@@ -1,0 +1,5 @@
+main: @group@.DemoMain
+name: @name@
+version: @version@
+api-version: 1.20
+author: nicolube

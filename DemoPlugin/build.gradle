@@ -1,0 +1,69 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'de.nicolube.tablist'
+version = '1.0-SNAPSHOT'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'purpurmc'
+        url "https://repo.purpurmc.org/snapshots"
+    }
+    maven {
+        name = 'jitpack'
+        url = 'https://jitpack.io'
+    }
+}
+
+dependencies {
+
+    String scoreboardLibraryVersion = "2.0.0-RC14"
+    implementation("com.github.megavexnetwork.scoreboard-library:scoreboard-library-api:$scoreboardLibraryVersion")
+    runtimeOnly("com.github.megavexnetwork.scoreboard-library:scoreboard-library-implementation:$scoreboardLibraryVersion")
+
+    runtimeOnly("com.github.megavexnetwork.scoreboard-library:scoreboard-library-modern:$scoreboardLibraryVersion")
+    runtimeOnly("com.github.megavexnetwork.scoreboard-library:scoreboard-library-packetevents:$scoreboardLibraryVersion")
+
+    compileOnly "org.purpurmc.purpur:purpur-api:1.20.2-R0.1-SNAPSHOT"
+
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.assemble.dependsOn tasks.shadowJar
+
+jar {
+    archiveFileName = "${project.name}-${project.version}-min.jar"
+}
+
+shadowJar {
+    minimize {
+        exclude dependency('com.github.megavexnetwork.scoreboard-library:scoreboard-library-implementation')
+        exclude dependency('com.github.megavexnetwork.scoreboard-library:scoreboard-library-modern')
+        exclude dependency('com.github.megavexnetwork.scoreboard-library:scoreboard-library-packetevent')
+    }
+    archiveFileName = "${project.name}-${project.version}.jar"
+}
+
+processResources {
+    filter(ReplaceTokens, tokens: [version: project.version, name: rootProject.name, group: project.group])
+}
+
+test {
+    useJUnitPlatform()
+}
